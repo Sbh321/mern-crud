@@ -1,14 +1,42 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Users() {
-  const [users, setUsers] = useState([
-    {
-      name: "John Doe",
-      email: "john@gmail.com",
-      age: 20,
-    },
-  ]);
+  const [users, setUsers] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:3001")
+      .then((result) => {
+        setUsers(result.data);
+        console.log("All records displayed from Database");
+      })
+      .catch((err) => {
+        console.log(err);
+        console.log("Failed to diaplay records");
+        console.log(
+          "Make sure server and DataBase are connected and running!!"
+        );
+      });
+  }, []);
+
+  const handleDelete = (id) => {
+    axios
+      .delete("http://localhost:3001/deleteUser/" + id)
+      .then((res) => {
+        console.log("User Deleted");
+        console.log(res);
+        window.location.reload();
+      })
+      .catch((err) => {
+        console.log(err);
+        console.log("User not deleted");
+      });
+  };
+
   return (
     <div className="d-flex vh-100 bg-primary justify-content-center align-items-center">
       <div className="w-50 bg-white rounded p-3">
@@ -27,15 +55,23 @@ function Users() {
           <tbody>
             {users.map((user) => {
               return (
-                <tr>
+                <tr key={user._id}>
                   <td>{user.name}</td>
                   <td>{user.email}</td>
                   <td>{user.age}</td>
                   <td>
-                    <Link to="/update" className="btn btn-success">
+                    <Link
+                      to={`/update/${user._id}`}
+                      className="btn btn-success"
+                    >
                       Update
                     </Link>
-                    <button>delete</button>
+                    <button
+                      className="btn btn-danger"
+                      onClick={(e) => handleDelete(user._id)}
+                    >
+                      delete
+                    </button>
                   </td>
                 </tr>
               );
